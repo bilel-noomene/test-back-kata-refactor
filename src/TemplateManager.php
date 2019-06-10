@@ -2,51 +2,49 @@
 
 namespace App;
 
-use App\Context\ApplicationContext;
-use App\Entity\Quote;
 use App\Entity\Template;
-use App\Entity\User;
-use App\Repository\DestinationRepository;
-use App\Repository\SiteRepository;
+use App\TemplateExtension\QuoteTemplateExtension;
+use App\TemplateExtension\TemplateExtensionInterface;
+use App\TemplateExtension\UserTemplateExtension;
 
 class TemplateManager
 {
-    public function getTemplateComputed(Template $template, array $data)
+    private $extensions;
+
+    public function __construct()
     {
+        $this->extensions = [
+            UserTemplateExtension::getInstance(),
+            QuoteTemplateExtension::getInstance(),
+        ];
+    }
+
+    public function getTemplateComputed(Template $template, array $inputData)
+    {
+        $placeholders = [];
+        $data = [];
+
+        /** @var TemplateExtensionInterface $extension */
+        foreach ($this->extensions as $extension) {
+            if ($extension->isInvolved($template)) {
+                $placeholders = array_merge($placeholders, $extension->getPlaceholders());
+                $data = array_merge($data, $extension->loadData($inputData));
+            }
+        }
+
         $replaced = clone($template);
-        $replaced->subject = $this->computeText($replaced->subject, $data);
-        $replaced->content = $this->computeText($replaced->content, $data);
+        $replaced->subject = $this->computeText($replaced->subject, $placeholders, $data);
+        $replaced->content = $this->computeText($replaced->content, $placeholders, $data);
 
         return $replaced;
     }
 
-    private function computeText($text, array $data)
+    private function computeText($text, array $placeholders, array $data)
     {
-        $quote = (isset($data['quote']) && $data['quote'] instanceof Quote) ? $data['quote'] : null;
-
-        if ($quote && $destination = DestinationRepository::getInstance()->getById($quote->destinationId)) {
-            $site = SiteRepository::getInstance()->getById($quote->siteId);
-            $destinationLink = sprintf('%s/%s/quote/%d', $site->url, $destination->countryName, $quote->id);
-
-            $text = str_replace('[quote:destination_link]', $destinationLink, $text);
-            $text = str_replace('[quote:destination_name]', $destination->countryName, $text);
-        } else {
-            $text = str_replace('[quote:destination_link]', '', $text);
-        }
-
-        if ($quote) {
-            $text = str_replace('[quote:summary_html]', Quote::renderHtml($quote), $text);
-            $text = str_replace('[quote:summary]', Quote::renderText($quote), $text);
-        }
-
-        /*
-         * USER
-         * [user:*]
-         */
-        $_user = (isset($data['user']) && $data['user'] instanceof User) ? $data['user'] : ApplicationContext::getInstance()->getCurrentUser();
-
-        if ($_user) {
-            $text = str_replace('[user:first_name]', ucfirst(mb_strtolower($_user->firstname)), $text);
+        foreach ($placeholders as $placeholder) {
+            if (array_key_exists($placeholder, $data)) {
+                $text = str_replace($placeholder, $data[$placeholder], $text);
+            }
         }
 
         return $text;
