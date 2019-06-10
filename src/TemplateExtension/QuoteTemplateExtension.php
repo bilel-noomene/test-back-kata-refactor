@@ -3,6 +3,7 @@
 namespace App\TemplateExtension;
 
 use App\Entity\Quote;
+use App\Helper\QuoteFormatter;
 use App\Helper\SingletonTrait;
 use App\Repository\DestinationRepository;
 use App\Repository\SiteRepository;
@@ -58,8 +59,8 @@ class QuoteTemplateExtension extends AbstractTemplateExtension
         }
 
         if ($quote) {
-            $this->appendData($data, self::TAG_SUMMARY, Quote::renderText($quote));
-            $this->appendData($data, self::TAG_SUMMARY_HTML, Quote::renderHtml($quote));
+            $this->appendData($data, self::TAG_SUMMARY, QuoteFormatter::renderText($quote));
+            $this->appendData($data, self::TAG_SUMMARY_HTML, QuoteFormatter::renderHtml($quote));
         }
 
         return $data;
