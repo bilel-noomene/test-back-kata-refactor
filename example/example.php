@@ -28,8 +28,8 @@ $templateManager = new TemplateManager();
 $message = $templateManager->getTemplateComputed(
     $template,
     [
-        'quote' => new Quote($faker->randomNumber(), $faker->randomNumber(), $faker->randomNumber(), $faker->date())
+        'quote' => new Quote($faker->randomNumber(), $faker->randomNumber(), $faker->randomNumber(), $faker->dateTime())
     ]
 );
 
-echo $message->subject . "\n" . $message->content;
+echo $message->getSubject() . "\n" . $message->getContent();

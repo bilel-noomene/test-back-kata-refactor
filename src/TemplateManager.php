@@ -21,7 +21,7 @@ class TemplateManager
      * @return Template
      * @throws \ReflectionException
      */
-    public function getTemplateComputed(Template $template, array $inputData)
+    public function getTemplateComputed(Template $template, array $inputData): Template
     {
         $placeholders = [];
         $data = [];
@@ -34,21 +34,20 @@ class TemplateManager
         }
 
         $replaced = clone($template);
-        $replaced->subject = $this->computeText($replaced->subject, $placeholders, $data);
-        $replaced->content = $this->computeText($replaced->content, $placeholders, $data);
+        $replaced->setSubject($this->computeText($replaced->getSubject(), $placeholders, $data));
+        $replaced->setContent($this->computeText($replaced->getContent(), $placeholders, $data));
 
         return $replaced;
     }
 
     /**
      * Replace placeholders in the text with the corresponding data.
-
      * @param $text
      * @param array $placeholders
      * @param array $data
      * @return mixed
      */
-    private function computeText($text, array $placeholders, array $data)
+    private function computeText(string $text, array $placeholders, array $data): string
     {
         foreach ($placeholders as $placeholder) {
             if (array_key_exists($placeholder, $data)) {
@@ -65,7 +64,7 @@ class TemplateManager
      * @return TemplateExtensionInterface[]
      * @throws \ReflectionException
      */
-    private function getExtensions()
+    private function getExtensions(): array
     {
         if (!self::$extensions) {
             self::$extensions = [];

@@ -15,14 +15,14 @@ interface TemplateExtensionInterface
      * @param Template $template
      * @return bool
      */
-    public function isInvolved(Template $template);
+    public function isInvolved(Template $template): bool;
 
     /**
      * Return the list of placeholders added by the extension.
      *
      * @return string[]
      */
-    public function getPlaceholders();
+    public function getPlaceholders(): array;
 
     /**
      * Load the data that correspond to the placeholders.
@@ -30,5 +30,5 @@ interface TemplateExtensionInterface
      * @param array $inputData
      * @return array
      */
-    public function loadData(array $inputData);
+    public function loadData(array $inputData): array;
 }

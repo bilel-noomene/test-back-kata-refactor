@@ -10,7 +10,7 @@
     }
   },
   "require": {
-    "php": "^5.5.9|^7.0",
+    "php": "^7.1",
     "fzaninotto/faker": "v1.6.0",
     "symfony/finder": "^4.3"
   },

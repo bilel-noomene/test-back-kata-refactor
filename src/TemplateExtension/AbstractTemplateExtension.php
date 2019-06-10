@@ -14,28 +14,28 @@ abstract class AbstractTemplateExtension implements TemplateExtensionInterface
      *
      * @return string
      */
-    abstract protected function getPrefix();
+    abstract protected function getPrefix(): string;
 
     /**
      * Return the tags used in placeholders.
      * @return string[]
      */
-    abstract protected function getTags();
+    abstract protected function getTags(): array;
 
     /**
      * {@inheritdoc}
      */
-    public function isInvolved(Template $template)
+    public function isInvolved(Template $template): bool
     {
         $pattern = sprintf('/\[%s:(%s)\]/', $this->getPrefix(), implode('|', $this->getTags()));
 
-        return (preg_match($pattern, $template->subject . $template->content));
+        return (preg_match($pattern, $template->getSubject() . $template->getContent()));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getPlaceholders()
+    public function getPlaceholders(): array
     {
         $placeholders = [];
 
@@ -52,7 +52,7 @@ abstract class AbstractTemplateExtension implements TemplateExtensionInterface
      * @param string $tag
      * @return string
      */
-    protected function composePlaceholder($tag)
+    protected function composePlaceholder($tag): string
     {
         return sprintf('[%s:%s]', $this->getPrefix(), $tag);
     }
@@ -64,7 +64,7 @@ abstract class AbstractTemplateExtension implements TemplateExtensionInterface
      * @param string $tag
      * @param mixed $value
      */
-    protected function appendData(array &$data, $tag, $value)
+    protected function appendData(array &$data, $tag, $value): void
     {
         $data[$this->composePlaceholder($tag)] = $value;
     }

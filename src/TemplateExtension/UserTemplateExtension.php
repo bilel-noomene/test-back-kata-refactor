@@ -13,12 +13,12 @@ class UserTemplateExtension extends AbstractTemplateExtension
 {
     use SingletonTrait;
 
-    const TAG_FIRST_NAME = 'first_name';
+    private const TAG_FIRST_NAME = 'first_name';
 
     /**
      * {@inheritdoc}
      */
-    protected function getPrefix()
+    protected function getPrefix(): string
     {
         return 'user';
     }
@@ -26,7 +26,7 @@ class UserTemplateExtension extends AbstractTemplateExtension
     /**
      * {@inheritdoc}
      */
-    protected function getTags()
+    protected function getTags(): array
     {
         return [self::TAG_FIRST_NAME];
     }
@@ -34,13 +34,16 @@ class UserTemplateExtension extends AbstractTemplateExtension
     /**
      * {@inheritdoc}
      */
-    public function loadData(array $inputData)
+    public function loadData(array $inputData): array
     {
         $data = [];
-        $user = (isset($data['user']) && $inputData['user'] instanceof User) ? $inputData['user'] : ApplicationContext::getInstance()->getCurrentUser();
+
+        if (!(($user = $data['user'] ?? null) instanceof User)) {
+            $user = ApplicationContext::getInstance()->getCurrentUser();
+        }
 
         if ($user) {
-            $this->appendData($data, self::TAG_FIRST_NAME, ucfirst(mb_strtolower($user->firstname)));
+            $this->appendData($data, self::TAG_FIRST_NAME, ucfirst(mb_strtolower($user->getFirstName())));
         }
 
         return $data;

@@ -17,7 +17,7 @@ class ClassFinder
      * @param string $namespace
      * @return array
      */
-    public function findInNamespace($namespace = 'App')
+    public function findInNamespace(string $namespace = 'App'): array
     {
         $finder = new Finder();
 
@@ -53,7 +53,7 @@ class ClassFinder
      * @return array
      * @throws \ReflectionException
      */
-    public function findByInterface($interface, $namespace = 'App', $instantiable = null)
+    public function findByInterface(string $interface, string $namespace = 'App', bool $instantiable = null): array
     {
         $classes = $this->findInNamespace($namespace);
         $filteredClasses = [];

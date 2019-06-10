@@ -15,7 +15,7 @@ class QuoteFormatter
      * @param Quote $quote
      * @return string
      */
-    public static function renderHtml(Quote $quote)
+    public static function renderHtml(Quote $quote): string
     {
         return '<p>' . $quote->getId() . '</p>';
     }
@@ -26,8 +26,8 @@ class QuoteFormatter
      * @param Quote $quote
      * @return string
      */
-    public static function renderText(Quote $quote)
+    public static function renderText(Quote $quote): string
     {
-        return (string) $quote->getId();
+        return (string)$quote->getId();
     }
 }

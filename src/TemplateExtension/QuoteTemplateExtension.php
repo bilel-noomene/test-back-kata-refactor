@@ -15,15 +15,15 @@ class QuoteTemplateExtension extends AbstractTemplateExtension
 {
     use SingletonTrait;
 
-    const TAG_SUMMARY = 'summary';
-    const TAG_SUMMARY_HTML = 'summary_html';
-    const TAG_DESTINATION_NAME = 'destination_name';
-    const TAG_DESTINATION_LINK = 'destination_link';
+    private const TAG_SUMMARY = 'summary';
+    private const TAG_SUMMARY_HTML = 'summary_html';
+    private const TAG_DESTINATION_NAME = 'destination_name';
+    private const TAG_DESTINATION_LINK = 'destination_link';
 
     /**
      * {@inheritdoc}
      */
-    protected function getPrefix()
+    protected function getPrefix(): string
     {
         return 'quote';
     }
@@ -31,7 +31,7 @@ class QuoteTemplateExtension extends AbstractTemplateExtension
     /**
      * {@inheritdoc}
      */
-    protected function getTags()
+    protected function getTags(): array
     {
         return [
             self::TAG_SUMMARY,
@@ -44,16 +44,16 @@ class QuoteTemplateExtension extends AbstractTemplateExtension
     /**
      * {@inheritdoc}
      */
-    public function loadData(array $inputData)
+    public function loadData(array $inputData): array
     {
         $data = [];
         $quote = (isset($inputData['quote']) && $inputData['quote'] instanceof Quote) ? $inputData['quote'] : null;
 
-        if ($quote && $destination = DestinationRepository::getInstance()->getById($quote->destinationId)) {
-            $site = SiteRepository::getInstance()->getById($quote->siteId);
+        if ($quote && $destination = DestinationRepository::getInstance()->getById($quote->getDestinationId())) {
+            $site = SiteRepository::getInstance()->getById($quote->getSiteId());
 
-            $this->appendData($data, self::TAG_DESTINATION_LINK, sprintf('%s/%s/quote/%d', $site->url, $destination->countryName, $quote->id));
-            $this->appendData($data, self::TAG_DESTINATION_NAME, $destination->countryName);
+            $this->appendData($data, self::TAG_DESTINATION_LINK, sprintf('%s/%s/quote/%d', $site->getUrl(), $destination->getCountryName(), $quote->getId()));
+            $this->appendData($data, self::TAG_DESTINATION_NAME, $destination->getCountryName());
         } else {
             $this->appendData($data, self::TAG_DESTINATION_LINK, '');
         }
