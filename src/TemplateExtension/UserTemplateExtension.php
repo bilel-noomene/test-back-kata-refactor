@@ -3,33 +3,32 @@
 namespace App\TemplateExtension;
 
 use App\Context\ApplicationContext;
-use App\Entity\Template;
 use App\Entity\User;
 use App\Helper\SingletonTrait;
 
 /**
  * Template extension for user placeholders.
  */
-class UserTemplateExtension implements TemplateExtensionInterface
+class UserTemplateExtension extends AbstractTemplateExtension
 {
     use SingletonTrait;
 
-    private $placeholders = ['[user:first_name]'];
+    const TAG_FIRST_NAME = 'first_name';
 
     /**
      * {@inheritdoc}
      */
-    public function isInvolved(Template $template)
+    protected function getPrefix()
     {
-        return preg_match('/\[user:first_name\]/', $template->subject . $template->content) === 1;
+        return 'user';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getPlaceholders()
+    protected function getTags()
     {
-        return $this->placeholders;
+        return [self::TAG_FIRST_NAME];
     }
 
     /**
@@ -41,7 +40,7 @@ class UserTemplateExtension implements TemplateExtensionInterface
         $user = (isset($data['user']) && $inputData['user'] instanceof User) ? $inputData['user'] : ApplicationContext::getInstance()->getCurrentUser();
 
         if ($user) {
-            $data['[user:first_name]'] = ucfirst(mb_strtolower($user->firstname));
+            $this->appendData($data, self::TAG_FIRST_NAME, ucfirst(mb_strtolower($user->firstname)));
         }
 
         return $data;

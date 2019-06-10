@@ -3,7 +3,6 @@
 namespace App\TemplateExtension;
 
 use App\Entity\Quote;
-use App\Entity\Template;
 use App\Helper\SingletonTrait;
 use App\Repository\DestinationRepository;
 use App\Repository\SiteRepository;
@@ -11,33 +10,34 @@ use App\Repository\SiteRepository;
 /**
  * Template extension for quote placeholders.
  */
-class QuoteTemplateExtension implements TemplateExtensionInterface
+class QuoteTemplateExtension extends AbstractTemplateExtension
 {
     use SingletonTrait;
 
-    private $placeholders = [
-        '[quote:summary_html]',
-        '[quote:summary]',
-        '[quote:destination_name]',
-        '[quote:destination_link]',
-    ];
+    const TAG_SUMMARY = 'summary';
+    const TAG_SUMMARY_HTML = 'summary_html';
+    const TAG_DESTINATION_NAME = 'destination_name';
+    const TAG_DESTINATION_LINK = 'destination_link';
 
     /**
      * {@inheritdoc}
      */
-    public function isInvolved(Template $template)
+    protected function getPrefix()
     {
-        $text = $template->subject . $template->content;
-
-        return preg_match('/\[quote:(summary_html|summary|destination_name|destination_link)\]/', $text) === 1;
+        return 'quote';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getPlaceholders()
+    protected function getTags()
     {
-        return $this->placeholders;
+        return [
+            self::TAG_SUMMARY,
+            self::TAG_SUMMARY_HTML,
+            self::TAG_DESTINATION_NAME,
+            self::TAG_DESTINATION_LINK,
+        ];
     }
 
     /**
@@ -51,15 +51,15 @@ class QuoteTemplateExtension implements TemplateExtensionInterface
         if ($quote && $destination = DestinationRepository::getInstance()->getById($quote->destinationId)) {
             $site = SiteRepository::getInstance()->getById($quote->siteId);
 
-            $data['[quote:destination_link]'] = sprintf('%s/%s/quote/%d', $site->url, $destination->countryName, $quote->id);
-            $data['[quote:destination_name]'] = $destination->countryName;
+            $this->appendData($data, self::TAG_DESTINATION_LINK, sprintf('%s/%s/quote/%d', $site->url, $destination->countryName, $quote->id));
+            $this->appendData($data, self::TAG_DESTINATION_NAME, $destination->countryName);
         } else {
-            $data['[quote:destination_link]'] = '';
+            $this->appendData($data, self::TAG_DESTINATION_LINK, '');
         }
 
         if ($quote) {
-            $data['[quote:summary_html]'] = Quote::renderHtml($quote);
-            $data['[quote:summary]'] = Quote::renderText($quote);
+            $this->appendData($data, self::TAG_SUMMARY, Quote::renderText($quote));
+            $this->appendData($data, self::TAG_SUMMARY_HTML, Quote::renderHtml($quote));
         }
 
         return $data;
