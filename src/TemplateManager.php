@@ -3,29 +3,30 @@
 namespace App;
 
 use App\Entity\Template;
-use App\TemplateExtension\QuoteTemplateExtension;
+use App\Helper\ClassFinder;
 use App\TemplateExtension\TemplateExtensionInterface;
-use App\TemplateExtension\UserTemplateExtension;
 
 class TemplateManager
 {
-    private $extensions;
+    /**
+     * @var TemplateExtensionInterface[]
+     */
+    private static $extensions;
 
-    public function __construct()
-    {
-        $this->extensions = [
-            UserTemplateExtension::getInstance(),
-            QuoteTemplateExtension::getInstance(),
-        ];
-    }
-
+    /**
+     * Replace placeholders in the template with the corresponding data.
+     *
+     * @param Template $template
+     * @param array $inputData
+     * @return Template
+     * @throws \ReflectionException
+     */
     public function getTemplateComputed(Template $template, array $inputData)
     {
         $placeholders = [];
         $data = [];
 
-        /** @var TemplateExtensionInterface $extension */
-        foreach ($this->extensions as $extension) {
+        foreach ($this->getExtensions() as $extension) {
             if ($extension->isInvolved($template)) {
                 $placeholders = array_merge($placeholders, $extension->getPlaceholders());
                 $data = array_merge($data, $extension->loadData($inputData));
@@ -39,6 +40,14 @@ class TemplateManager
         return $replaced;
     }
 
+    /**
+     * Replace placeholders in the text with the corresponding data.
+
+     * @param $text
+     * @param array $placeholders
+     * @param array $data
+     * @return mixed
+     */
     private function computeText($text, array $placeholders, array $data)
     {
         foreach ($placeholders as $placeholder) {
@@ -48,5 +57,27 @@ class TemplateManager
         }
 
         return $text;
+    }
+
+    /**
+     * Load the available template extensions.
+     *
+     * @return TemplateExtensionInterface[]
+     * @throws \ReflectionException
+     */
+    private function getExtensions()
+    {
+        if (!self::$extensions) {
+            self::$extensions = [];
+            $namespace = (new \ReflectionClass(TemplateExtensionInterface::class))->getNamespaceName();
+
+            $extensionsClasses = ClassFinder::getInstance()->findByInterface(TemplateExtensionInterface::class, $namespace, true);
+
+            foreach ($extensionsClasses as $class) {
+                self::$extensions[] = new $class;
+            }
+        }
+
+        return self::$extensions;
     }
 }
